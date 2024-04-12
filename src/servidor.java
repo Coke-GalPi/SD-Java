@@ -7,40 +7,58 @@ public class servidor {
         try {
             DatagramSocket unSocket = new DatagramSocket(6789);
             byte[] bufer = new byte[1000];
+
             while (true) {
                 DatagramPacket peticion = new DatagramPacket(bufer, bufer.length);
                 unSocket.receive(peticion);
-                String mensajeRecibido = new String(peticion.getData()).trim();
-                System.out.println("\n\nPalabra para buscar: " + mensajeRecibido);
+                String mensajeRecibido = new String(peticion.getData(), 0, peticion.getLength()).trim();
+
+                String[] partes = mensajeRecibido.split(":", 2);
+                String accion = partes[0];
+                String contenido = partes.length > 1 ? partes[1] : "";
+                
                 String respuestaMensaje = "";
+
                 try {
-                    final String url = "jdbc:mysql://localhost:3306/diccionario";
-                    final String username = "root";
-                    final String password = "";
-                    Connection con = DriverManager.getConnection(url, username, password);
-                    String query = "SELECT SIGNIFICADO FROM palabras WHERE PALABRA = ?";
-                    PreparedStatement statement = con.prepareStatement(query);
-                    statement.setString(1, mensajeRecibido);
-                    ResultSet resultSet = statement.executeQuery();
-                    if (resultSet.next()) {
-                        respuestaMensaje = "Significado: " + resultSet.getString("SIGNIFICADO");
-                    } else {
-                        // respuestaMensaje = "La palabra no fue encontrada en la base de datos.";
-                        respuestaMensaje = null;
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/diccionario", "root", "");
+                    if (accion.equals("buscar")) {
+                        PreparedStatement statement = con.prepareStatement("SELECT SIGNIFICADO FROM palabras WHERE PALABRA = ?");
+                        statement.setString(1, contenido);
+                        ResultSet resultSet = statement.executeQuery();
+                        if (resultSet.next()) {
+                            respuestaMensaje = "Significado: " + resultSet.getString("SIGNIFICADO");
+                        } else {
+                            respuestaMensaje = "Palabra no encontrada";
+                        }
+                    } else if (accion.equals("agregar")) {
+                        PreparedStatement statement = con.prepareStatement("INSERT INTO palabras (PALABRA, SIGNIFICADO) VALUES (?, ?)");
+                        String[] datos = contenido.split(",", 2);
+                        if (datos.length < 2) {
+                            respuestaMensaje = "Error: formato incorrecto para agregar.";
+                        } else {
+                            statement.setString(1, datos[0]);
+                            statement.setString(2, datos[1]);
+                            statement.executeUpdate();
+                            respuestaMensaje = "Palabra agregada exitosamente";
+                        }
                     }
                     con.close();
+                } catch (SQLException e) {
+                    System.out.println("SQL Error: " + e.getMessage());
+                    respuestaMensaje = "Error en base de datos";
                 } catch (Exception e) {
-                    System.out.println("Error: " + e);
+                    System.out.println("Error: " + e.getMessage());
+                    respuestaMensaje = "Error en el servidor";
                 }
+
                 byte[] respuestaBytes = respuestaMensaje.getBytes();
-                DatagramPacket respuesta = new DatagramPacket(respuestaBytes, respuestaBytes.length,
-                        peticion.getAddress(), peticion.getPort());
+                DatagramPacket respuesta = new DatagramPacket(respuestaBytes, respuestaBytes.length, peticion.getAddress(), peticion.getPort());
                 unSocket.send(respuesta);
             }
         } catch (SocketException e) {
-            System.out.println("Socket: " + e.getMessage());
+            System.out.println("Socket Error: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("IO: " + e.getMessage());
+            System.out.println("IO Error: " + e.getMessage());
         }
     }
 }

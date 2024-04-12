@@ -12,49 +12,52 @@ public class cliente {
 
     public static void main(String args[]) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("\n\nIngrese la palabra: ");
-        String mensaje = scanner.nextLine();
-        String significado;
-        String nombreServidor = "localhost";
-        try {
-            DatagramSocket unSocket = new DatagramSocket();
-            byte[] m = mensaje.getBytes();
-            InetAddress unHost = InetAddress.getByName(nombreServidor);
-            int puertoServidor = 6789;
-            DatagramPacket peticion = new DatagramPacket(m, mensaje.length(), unHost, puertoServidor);
-            unSocket.send(peticion);
-            byte[] bufer = new byte[1000];
-            DatagramPacket respuesta = new DatagramPacket(bufer, bufer.length);
-            unSocket.receive(respuesta);
-            // String res = new String(respuesta.getData());
-            // System.out.println("-> " + res);
-            String respuestaString = new String(respuesta.getData()).trim();
-            String respuestaEsperada = "La palabra no fue encontrada en la base de datos.";
-            if (respuestaString.equalsIgnoreCase(respuestaEsperada)) {
-                System.out.println(new String(respuesta.getData()));
-                int opcion;
-                do {
+        while (true) {
+            System.out.print("\n\nIngrese la palabra: ");
+            String palabra = scanner.nextLine();
+            if (palabra.isEmpty()) break;
+
+            try {
+                DatagramSocket unSocket = new DatagramSocket();
+                InetAddress unHost = InetAddress.getByName("localhost");
+                String mensaje = "buscar:" + palabra;
+                byte[] m = mensaje.getBytes();
+                DatagramPacket peticion = new DatagramPacket(m, m.length, unHost, 6789);
+                unSocket.send(peticion);
+
+                byte[] bufer = new byte[1000];
+                DatagramPacket respuesta = new DatagramPacket(bufer, bufer.length);
+                unSocket.receive(respuesta);
+                String respuestaString = new String(respuesta.getData(), 0, respuesta.getLength()).trim();
+
+                if (respuestaString.equals("Palabra no encontrada")) {
+                    System.out.println(respuestaString);
                     mostrarMenu();
                     System.out.print("Ingrese su opción: ");
-                    opcion = scanner.nextInt();
-                    switch (opcion) {
-                        case 1:
-                            System.out.print("Dale significado: ");
-                            significado = scanner.nextLine();
-                            break;
-                        case 0:
-                            System.out.println("Saliendo del programa...");
-                            break;
-                        default:
-                            System.out.println("Opción no válida. Por favor, seleccione nuevamente.");
+                    int opcion = scanner.nextInt();
+                    scanner.nextLine(); // consume newline
+                    if (opcion == 1) {
+                        System.out.print("Ingrese el significado: ");
+                        String significado = scanner.nextLine();
+                        mensaje = "agregar:" + palabra + "," + significado;
+                        m = mensaje.getBytes();
+                        peticion = new DatagramPacket(m, m.length, unHost, 6789);
+                        unSocket.send(peticion);
+                        unSocket.receive(respuesta);
+                        System.out.println(new String(respuesta.getData(), 0, respuesta.getLength()).trim());
+                    } else if (opcion == 0) {
+                        System.out.println("Saliendo del programa...");
+                        break;
                     }
-                } while (opcion != 0);
+                } else {
+                    System.out.println(respuestaString);
+                }
+                unSocket.close();
+            } catch (SocketException e) {
+                System.out.println("Socket Error: " + e.getMessage());
+            } catch (IOException e) {
+                System.out.println("IO Error: " + e.getMessage());
             }
-            unSocket.close();
-        } catch (SocketException e) {
-            System.out.println("Socket: " + e.getMessage());
-        } catch (IOException e) {
-            System.out.println("IO: " + e.getMessage());
         }
         scanner.close();
     }
