@@ -100,7 +100,7 @@ public class cliente {
                                     scanner.nextLine();
                                     System.out.print("Tipo de moneda de cambio: ");
                                     moneda = scanner.nextLine();
-                                    System.out.print("Ingrese el valor de la moneda de cambio: $");
+                                    System.out.print("Ingrese el valor del " + moneda + ": $");
                                     valorMoneda = scanner.nextDouble();
                                     try {
                                         DatagramSocket unSocket = new DatagramSocket();
@@ -130,9 +130,9 @@ public class cliente {
                                     System.out.print("Tipo de moneda de cambio: ");
                                     moneda = scanner.nextLine();
                                     scanner.nextLine();
-                                    System.out.print("Ingrese monto de su moneda: $");
+                                    System.out.print("Ingrese monto en " + moneda + " de su moneda: $");
                                     montoOriginal = scanner.nextDouble();
-                                    System.out.print("Ingrese el valor de la moneda de cambio: $");
+                                    System.out.print("Ingrese el valor del " + moneda + " en CLP: $");
                                     valorMoneda = scanner.nextDouble();
                                     try {
                                         DatagramSocket unSocket = new DatagramSocket();
