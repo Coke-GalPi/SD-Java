@@ -16,6 +16,13 @@ public class cliente {
         System.out.println("0.- Salir");
     }
 
+    public static void mostrarMenuMoneda() {
+        System.out.println("\n-- Menu --");
+        System.out.println("1.- Clp -> Internacional");
+        System.out.println("2.- Internacional -> Clp");
+        System.out.println("0.- Cerrar App");
+    }
+
     public static void main(String args[]) {
         Scanner scanner = new Scanner(System.in);
         int opcionApp;
@@ -76,38 +83,84 @@ public class cliente {
                     } while (!palabra.isEmpty());
                     break;
                 case 2:
-                    System.out.println("\nCambio de moneda.");
+                    int opcionMoneda;
                     double montoOriginal, valorMoneda;
                     String moneda;
                     do {
-                        System.out.println("Ingrese monto en pesos");
-                        System.out.print("Ingrese monto es su moneda: $");
-                        montoOriginal = scanner.nextDouble();
-                        scanner.nextLine();
-                        System.out.print("Tipo de moneda de cambio: ");
-                        moneda = scanner.nextLine();
-                        System.out.print("Ingrese el valor de la moneda de cambio: $");
-                        valorMoneda = scanner.nextDouble();
-                        try {
-                            DatagramSocket unSocket = new DatagramSocket();
-                            InetAddress unHost = InetAddress.getByName("localhost");
-                            String mensaje = "cambio:" + montoOriginal + "," + valorMoneda;
-                            byte[] m = mensaje.getBytes();
-                            DatagramPacket peticion = new DatagramPacket(m, m.length, unHost, 6789);
-                            unSocket.send(peticion);
-                            byte[] bufer = new byte[1000];
-                            DatagramPacket respuesta = new DatagramPacket(bufer, bufer.length);
-                            unSocket.receive(respuesta);
-                            String respuestaString = new String(respuesta.getData(), 0, respuesta.getLength())
-                                    .trim();
-                            System.out.println(respuestaString + " " + moneda);
-                            unSocket.close();
-                        } catch (SocketException e) {
-                            System.out.println("Socket Error: " + e.getMessage());
-                        } catch (IOException e) {
-                            System.out.println("IO Error: " + e.getMessage());
+                        mostrarMenuMoneda();
+                        System.out.print("Ingrese un opcion: ");
+                        opcionMoneda = scanner.nextInt();
+                        switch (opcionMoneda) {
+                            case 1:
+                                System.out.println("\nClp -> Internacional.");
+                                do {
+                                    System.out.println("Ingrese monto en pesos");
+                                    System.out.print("Ingrese monto de su moneda: $");
+                                    montoOriginal = scanner.nextDouble();
+                                    scanner.nextLine();
+                                    System.out.print("Tipo de moneda de cambio: ");
+                                    moneda = scanner.nextLine();
+                                    System.out.print("Ingrese el valor de la moneda de cambio: $");
+                                    valorMoneda = scanner.nextDouble();
+                                    try {
+                                        DatagramSocket unSocket = new DatagramSocket();
+                                        InetAddress unHost = InetAddress.getByName("localhost");
+                                        String mensaje = "Internacional:" + montoOriginal + "," + valorMoneda;
+                                        byte[] m = mensaje.getBytes();
+                                        DatagramPacket peticion = new DatagramPacket(m, m.length, unHost, 6789);
+                                        unSocket.send(peticion);
+                                        byte[] bufer = new byte[1000];
+                                        DatagramPacket respuesta = new DatagramPacket(bufer, bufer.length);
+                                        unSocket.receive(respuesta);
+                                        String respuestaString = new String(respuesta.getData(), 0,
+                                                respuesta.getLength())
+                                                .trim();
+                                        System.out.println(respuestaString + " " + moneda);
+                                        unSocket.close();
+                                    } catch (SocketException e) {
+                                        System.out.println("Socket Error: " + e.getMessage());
+                                    } catch (IOException e) {
+                                        System.out.println("IO Error: " + e.getMessage());
+                                    }
+                                } while (montoOriginal < 0.0 && valorMoneda < 0.0 && !moneda.isEmpty());
+                                break;
+                            case 2:
+                                System.out.println("\nInternacional -> Clp");
+                                do {
+                                    System.out.print("Tipo de moneda de cambio: ");
+                                    moneda = scanner.nextLine();
+                                    scanner.nextLine();
+                                    System.out.print("Ingrese monto de su moneda: $");
+                                    montoOriginal = scanner.nextDouble();
+                                    System.out.print("Ingrese el valor de la moneda de cambio: $");
+                                    valorMoneda = scanner.nextDouble();
+                                    try {
+                                        DatagramSocket unSocket = new DatagramSocket();
+                                        InetAddress unHost = InetAddress.getByName("localhost");
+                                        String mensaje = "CLP:" + montoOriginal + "," + valorMoneda;
+                                        byte[] m = mensaje.getBytes();
+                                        DatagramPacket peticion = new DatagramPacket(m, m.length, unHost, 6789);
+                                        unSocket.send(peticion);
+                                        byte[] bufer = new byte[1000];
+                                        DatagramPacket respuesta = new DatagramPacket(bufer, bufer.length);
+                                        unSocket.receive(respuesta);
+                                        String respuestaString3 = new String(respuesta.getData(), 0,
+                                                respuesta.getLength())
+                                                .trim();
+                                        System.out.println(respuestaString3 + " " + moneda);
+                                        unSocket.close();
+                                    } catch (SocketException e) {
+                                        System.out.println("Socket Error: " + e.getMessage());
+                                    } catch (IOException e) {
+                                        System.out.println("IO Error: " + e.getMessage());
+                                    }
+                                } while (montoOriginal < 0.0 && valorMoneda < 0.0 && !moneda.isEmpty());
+                                break;
+                            default:
+                                System.out.println("\n\nSaliendo de la APP...\n");
+                                break;
                         }
-                    } while (montoOriginal < 0.0 && valorMoneda < 0.0 && !moneda.isEmpty());
+                    } while (opcionMoneda != 0);
                     break;
                 case 0:
                     System.out.println("\n\nSaliendo de la APP...\n");

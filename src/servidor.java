@@ -44,7 +44,7 @@ public class servidor {
                             statement.executeUpdate();
                             respuestaMensaje = "Palabra agregada exitosamente";
                         }
-                    } else if (accion.equals("cambio")) {
+                    } else if (accion.equals("Internacional")) {
                         double montoOriginal, valorMoneda, total;
                         String totalFormato;
                         String[] datos = contenido.split(",", 2);
@@ -55,6 +55,20 @@ public class servidor {
                             valorMoneda = Double.parseDouble(datos[1]);
                             total = (montoOriginal / valorMoneda);
                             DecimalFormat formato = new DecimalFormat("#.##");
+                            totalFormato = formato.format(total);
+                            respuestaMensaje = "El cambio es de: " + totalFormato;
+                        }
+                    } else if (accion.equals("CLP")) {
+                        double montoOriginal, valorMoneda, total;
+                        String totalFormato;
+                        String[] datos = contenido.split(",", 2);
+                        if (datos.length < 2) {
+                            respuestaMensaje = "Error: formato incorrecto para agregar.";
+                        } else {
+                            montoOriginal = Double.parseDouble(datos[0]);
+                            valorMoneda = Double.parseDouble(datos[1]);
+                            total = (montoOriginal * valorMoneda);
+                            DecimalFormat formato = new DecimalFormat("#");
                             totalFormato = formato.format(total);
                             respuestaMensaje = "El cambio es de: " + totalFormato;
                         }
